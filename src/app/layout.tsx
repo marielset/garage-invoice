@@ -15,10 +15,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="top-0 bg-orange-500 fixed flex-wrap w-full z-50 border-primary">
+        <header className="top-0 bg-orange-500 sticky flex-wrap w-full z-50 border-primary">
           <h1 className="text-xl text-white pl-4 p-2">My Garage Invoice</h1>
         </header>
-        <main>{children}</main>
+        <main className="flex flex-grow p-4 pt-8">{children}</main>
       </body>
     </html>
   );
