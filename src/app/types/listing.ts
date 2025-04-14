@@ -1,5 +1,11 @@
+import { User } from "./user";
+
 export type Listing = {
-    name: string;
-    description: string;
-    price: string;
-}
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  images?: string[];
+  seller: User;
+  buyer?: User;
+};
