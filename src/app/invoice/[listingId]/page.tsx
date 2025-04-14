@@ -4,6 +4,8 @@ import { Listing } from "@/app/types/listing";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import html2canvas from "html2canvas-pro";
+import jsPDF from "jspdf";
 
 export default function InvoicePage() {
   const { listingId } = useParams();
@@ -35,25 +37,68 @@ export default function InvoicePage() {
     alert(`Invoice sent to ${email}`);
   };
 
+  const handlePrint = async () => {
+    const input = document.getElementById("user-invoice");
+    if (!input) return;
+    // replace all inputs with their values for formatting
+    input.querySelectorAll("input, textarea").forEach((input) => {
+      const span = document.createElement("span");
+      span.textContent =
+        (input as HTMLInputElement | HTMLTextAreaElement).value || " ";
+      span.style.display = "inline-block";
+      span.style.whiteSpace = "pre-wrap";
+      input.replaceWith(span);
+    });
+    html2canvas(input).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "letter",
+      });
+      // calculate the height of the image so that it isn't stretched to full page
+      const imgHeight =
+        (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width;
+      pdf.addImage(
+        imgData,
+        "JPEG",
+        0,
+        0,
+        pdf.internal.pageSize.getWidth(),
+        imgHeight
+      );
+      // pdf.output('dataurlnewwindow');
+      pdf.save("garage-invoice.pdf");
+    });
+  };
+
   return listing ? (
-    <div className="pb-8">
-      <h1>Invoice for Listing: {listing?.name}</h1>
+    <div className="flex flex-col gap-4 pb-8">
+      <div className="flex w-full justify-between">
+        <h1>Invoice for Listing: {listing?.name}</h1>{" "}
+        <button>Input another link</button>
+      </div>
       <div className="w-full overflow-hidden">
         <ul className="flex gap-4 overflow-x-scroll scrollbar-hide">
           {listing?.images?.map((url) => (
             <li key={url} className="flex-shrink-0">
-              <img
-                className="h-48 w-auto rounded object-cover"
-                alt={`invoice_img_${url}`}
-                src={url}
-              />
+              <picture>
+                <img
+                  className="h-48 w-auto rounded object-cover"
+                  alt={`invoice_img_${url}`}
+                  src={url}
+                />
+              </picture>
             </li>
           ))}
         </ul>
       </div>
 
       <div>
-        <div className="bg-white border text-black p-6 mt-6 rounded shadow print:block pb-8">
+        <div
+          id="user-invoice"
+          className="bg-white border text-black p-6 mt-6 rounded shadow print:block pb-8"
+        >
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-2 pb-4">
               <Image
@@ -68,8 +113,9 @@ export default function InvoicePage() {
                   <input type="text" />
                 </p>
                 <p>
-                  Date billed:{" "}
+                  Date billed:
                   <input
+                    className="print:text-sm"
                     type="date"
                     defaultValue={new Date().toISOString().split("T")[0]}
                   />
@@ -151,7 +197,7 @@ export default function InvoicePage() {
       </div>
       <div className="flex justify-end gap-2">
         <button
-          onClick={() => {}}
+          onClick={handlePrint}
           className="px-4 py-2 bg-gray-400 rounded hover:bg-gray-500"
         >
           Download pdf
