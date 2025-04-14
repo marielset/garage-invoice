@@ -29,3 +29,11 @@ export const flattenListingData = (
   };
   return listing;
 };
+
+export const getTaxAmount = (subTotal: number, taxRate: number) => {
+  return (subTotal * taxRate) / 100 || 0;
+};
+
+export const getTotal = (subTotal: number, taxRate: number) => {
+  return subTotal + getTaxAmount(subTotal, taxRate);
+};

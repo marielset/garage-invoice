@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
+import PriceTable from "./priceTable";
 
 export default function InvoicePage() {
   const { listingId } = useParams();
@@ -67,7 +68,6 @@ export default function InvoicePage() {
         pdf.internal.pageSize.getWidth(),
         imgHeight
       );
-      // pdf.output('dataurlnewwindow');
       pdf.save("garage-invoice.pdf");
     });
   };
@@ -110,12 +110,14 @@ export default function InvoicePage() {
               <div>
                 <p>
                   Invoice number: INV-
-                  <input type="text" />
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded"
+                  />
                 </p>
                 <p>
                   Date billed:
                   <input
-                    className="print:text-sm"
                     type="date"
                     defaultValue={new Date().toISOString().split("T")[0]}
                   />
@@ -129,7 +131,11 @@ export default function InvoicePage() {
             <div className="flex flex-row justify-between px-8 gap-4">
               <div className="flex flex-col w-full">
                 <h2 className="text-2xl font-bold mb-2">Bill to</h2>
-                <textarea rows={3} placeholder="Enter buyer information here" />
+                <textarea
+                  rows={3}
+                  placeholder="Enter buyer information here"
+                  className="border border-gray-300 rounded"
+                />
               </div>
               <div className="flex flex-col w-full">
                 <h2 className="text-2xl font-bold mb-2">Invoice</h2>
@@ -137,7 +143,14 @@ export default function InvoicePage() {
                   {listing.seller.name}{" "}
                   <input type="text" placeholder="enter name here" />
                 </p>
-                <p>{listing.seller.email}</p>
+                <p>
+                  <input
+                    className="w-full"
+                    type="text"
+                    placeholder="enter email here"
+                    defaultValue={listing.seller.email}
+                  />
+                </p>
                 <p>
                   <input type="text" placeholder="enter address here" />
                 </p>
@@ -182,15 +195,10 @@ export default function InvoicePage() {
                   </tr>
                 </tbody>
               </table>
-
-              <div className="flex justify-end mt-4">
-                <div className="text-right">
-                  <p className="text-lg font-semibold">
-                    Total: $
-                    {(parseFloat(listing.price) * quantity).toLocaleString()}
-                  </p>
-                </div>
-              </div>
+              <PriceTable
+                price={parseFloat(listing.price)}
+                quantity={quantity}
+              />
             </div>
           </div>
         </div>
