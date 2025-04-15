@@ -7,11 +7,14 @@ import Image from "next/image";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import PriceTable from "./priceTable";
+import { useRouter } from "next/navigation";
 
 export default function InvoicePage() {
   const { listingId } = useParams();
   const [listing, setListing] = useState<Listing | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [price, setPrice] = useState<number>(0);
+  const router = useRouter();
 
   const getListing = useCallback(async () => {
     const response = await fetch(
@@ -23,7 +26,9 @@ export default function InvoicePage() {
       }
     );
     const result = await response.json();
-    setListing(flattenListingData(result));
+    const { listing: newListing, price: newPrice } = flattenListingData(result);
+    setListing(newListing);
+    setPrice(parseFloat(newPrice || ""));
   }, [listingId]);
 
   useEffect(() => {
@@ -35,7 +40,7 @@ export default function InvoicePage() {
 
     // Replace with your email-sending logic (API call, etc.)
     console.log("Sending invoice to:", email);
-    alert(`Invoice sent to ${email}`);
+    alert(`Email options are still in progress. Please check in later.`);
   };
 
   const handlePrint = async () => {
@@ -48,6 +53,7 @@ export default function InvoicePage() {
         (input as HTMLInputElement | HTMLTextAreaElement).value || " ";
       span.style.display = "inline-block";
       span.style.whiteSpace = "pre-wrap";
+      span.style.lineHeight = "1.4";
       input.replaceWith(span);
     });
     html2canvas(input).then((canvas) => {
@@ -72,11 +78,20 @@ export default function InvoicePage() {
     });
   };
 
+  const returnHome = () => {
+    router.push("/");
+  };
+
   return listing ? (
     <div className="flex flex-col gap-4 pb-8">
       <div className="flex w-full justify-between">
         <h1>Invoice for Listing: {listing?.name}</h1>{" "}
-        <button>Input another link</button>
+        <button
+          className="px-4 py-2 rounded-lg border border-orange-600 shadow"
+          onClick={returnHome}
+        >
+          Input another link
+        </button>
       </div>
       <div className="w-full overflow-hidden">
         <ul className="flex gap-4 overflow-x-scroll scrollbar-hide">
@@ -134,26 +149,17 @@ export default function InvoicePage() {
                 <textarea
                   rows={3}
                   placeholder="Enter buyer information here"
-                  className="border border-gray-300 rounded"
+                  className="p-1 border border-gray-300 rounded"
                 />
               </div>
               <div className="flex flex-col w-full">
                 <h2 className="text-2xl font-bold mb-2">Invoice</h2>
-                <p>
-                  {listing.seller.name}{" "}
-                  <input type="text" placeholder="enter name here" />
-                </p>
-                <p>
-                  <input
-                    className="w-full"
-                    type="text"
-                    placeholder="enter email here"
-                    defaultValue={listing.seller.email}
-                  />
-                </p>
-                <p>
-                  <input type="text" placeholder="enter address here" />
-                </p>
+                <textarea
+                  rows={3}
+                  defaultValue={listing.seller.email}
+                  placeholder="Enter seller information here"
+                  className="p-1 border border-gray-300 rounded"
+                />
               </div>
             </div>
             <div>
@@ -187,34 +193,38 @@ export default function InvoicePage() {
                       />
                     </td>
                     <td className="px-4 py-2 border-b">
-                      ${listing.price.toLocaleString()}
+                      <input
+                        type="number"
+                        min={0}
+                        value={price}
+                        onChange={(e) =>
+                          setPrice(parseInt(e.target.value) || 0)
+                        }
+                      />
                     </td>
                     <td className="px-4 py-2 border-b">
-                      ${(parseFloat(listing.price) * quantity).toLocaleString()}
+                      ${(price * quantity).toLocaleString()}
                     </td>
                   </tr>
                 </tbody>
               </table>
-              <PriceTable
-                price={parseFloat(listing.price)}
-                quantity={quantity}
-              />
+              <PriceTable price={price} quantity={quantity} />
             </div>
           </div>
         </div>
       </div>
       <div className="flex justify-end gap-2">
         <button
-          onClick={handlePrint}
+          onClick={handleSend}
           className="px-4 py-2 bg-gray-400 rounded hover:bg-gray-500"
         >
-          Download pdf
+          Send via email
         </button>
         <button
-          onClick={handleSend}
+          onClick={handlePrint}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          Send via email
+          Download pdf
         </button>
       </div>
     </div>

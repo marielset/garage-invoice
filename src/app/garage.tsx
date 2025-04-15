@@ -32,7 +32,7 @@ const GarageForm = () => {
       </div>
       <input
         name="listing-url"
-        className="w-full font-black bg-gray-50 flex items-center shadow border border-gray-300 rounded-md overflow-hidden"
+        className="w-full text-black bg-gray-50 flex items-center shadow border border-gray-300 rounded-md overflow-hidden"
         type="text"
       ></input>
       <div>

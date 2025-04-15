@@ -14,7 +14,7 @@ export const flattenListingData = (
   rawData: Record<string, Record<string, any>>
 ) => {
   const data = rawData.result?.listing;
-  if (!data) return null;
+  if (!data) return { price: null, listing: null };
   const listing: Listing = {
     id: data.id as string,
     name: data.listingTitle as string,
@@ -27,7 +27,7 @@ export const flattenListingData = (
     },
     buyer: undefined,
   };
-  return listing;
+  return { listing, price: data.sellingPrice as string };
 };
 
 export const getTaxAmount = (subTotal: number, taxRate: number) => {
